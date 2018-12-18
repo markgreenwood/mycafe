@@ -1,4 +1,5 @@
 const chai = require("chai");
+// const { inspect } = require("util");
 const newStorage = require("./support/storageDouble");
 const orderSystemWith = require("../lib/orders");
 
@@ -12,23 +13,24 @@ describe("Customer displays order", () => {
   });
 
   context("Given that the order is empty", () => {
-    let result;
-
     beforeEach(async () => {
       this.order = this.orderStorage.alreadyContains({
         id: "some empty order id",
         data: [],
       });
-      console.log(this.order);
-      result = await this.orderSystem.display(this.order.id).then(console.log);
+
+      this.result = this.orderSystem.display(this.order.id);
     });
 
-    it("will show no order items", () => expect(result).to.have.property("items").that.is.empty);
+    it("will show no order items", () => {
+      expect(this.result).to.eventually.have.property("items").that.is.empty;
+    });
 
-    it("will show 0 as the total price", () =>
+    it("will show 0 as the total price", () => {
       expect(this.result)
         .to.eventually.have.property("totalPrice")
-        .that.is.equal(0));
+        .that.is.equal(0);
+    });
 
     it("will only be possible to add a beverage", () =>
       expect(this.result)
@@ -36,7 +38,7 @@ describe("Customer displays order", () => {
         .that.is.deep.equal([
           {
             action: "append-beverage",
-            target: this.orderId,
+            target: this.order.id,
             parameters: {
               beverageRef: null,
               quantity: 0,
@@ -64,14 +66,13 @@ describe("Customer displays order", () => {
           { beverage: this.mochaccino, quantity: 2 },
         ],
       });
-      console.log(this.order);
-      this.result = await this.orderSystem.display(this.order.id).then(console.log);
+      this.result = this.orderSystem.display(this.order.id);
     });
 
     it("will show one item per beverage", () =>
       expect(this.result)
         .to.eventually.have.property("items")
-        .that.is.deep.equal(this.orderItems));
+        .that.is.deep.equal(this.order.data));
 
     it("will show the sum of the unit prices as total price", () =>
       expect(this.result)
