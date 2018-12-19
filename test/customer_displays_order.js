@@ -1,5 +1,6 @@
 // const { inspect } = require("util");
 const chai = require("chai");
+const order = require("./support/examples/orders");
 const newStorage = require("./support/storageDouble");
 const orderSystemWith = require("../lib/orders");
 
@@ -21,10 +22,7 @@ describe("Customer displays order", () => {
     let result;
 
     beforeEach(async () => {
-      this.order = this.orderStorage.alreadyContains({
-        id: "some empty order id",
-        data: [],
-      });
+      this.order = this.orderStorage.alreadyContains(order.empty());
 
       result = await this.orderSystem.display(this.order.id);
       return result;
@@ -70,13 +68,12 @@ describe("Customer displays order", () => {
         name: "Mochaccino",
         price: 2.3,
       };
-      this.order = this.orderStorage.alreadyContains({
-        id: "some non empty order id",
-        data: [
-          { beverage: this.espresso, quantity: 1 },
-          { beverage: this.mochaccino, quantity: 2 },
-        ],
-      });
+      this.order = this.orderStorage.alreadyContains(
+        order.withItems([
+          { beverage: "espresso", quantity: 1 },
+          { beverage: "mochaccino", quantity: 2 },
+        ])
+      );
       result = await this.orderSystem.display(this.order.id);
       return result;
     });
