@@ -1,16 +1,11 @@
-// const { inspect } = require("util");
 const chai = require("chai");
+const beverage = require("./support/examples/beverages");
 const order = require("./support/examples/orders");
 const newStorage = require("./support/storageDouble");
 const orderSystemWith = require("../lib/orders");
 
 const { expect } = chai;
 chai.use(require("chai-as-promised"));
-
-// const displayResult = thing => {
-//   console.log(`${inspect(thing, { depth: 5 })}\n`);
-//   return thing;
-// };
 
 describe("Customer displays order", () => {
   beforeEach(async () => {
@@ -19,29 +14,24 @@ describe("Customer displays order", () => {
   });
 
   context("Given that the order is empty", () => {
-    let result;
-
-    beforeEach(async () => {
+    beforeEach(() => {
       this.order = this.orderStorage.alreadyContains(order.empty());
-
-      result = await this.orderSystem.display(this.order.id);
-      return result;
+      this.result = this.orderSystem.display(this.order.id);
+      return this.result;
     });
 
-    it("will show no order items", () => {
-      // eslint-disable-next-line no-unused-expressions
-      expect(result).to.have.property("items").that.is.empty;
-    });
+    it("will show no order items", () =>
+      expect(this.result).to.eventually.have.property("items").that.is.empty);
 
     it("will show 0 as the total price", () => {
-      expect(result)
-        .to.have.property("totalPrice")
+      expect(this.result)
+        .to.eventually.have.property("totalPrice")
         .that.is.equal(0);
     });
 
     it("will only be possible to add a beverage", () =>
-      expect(result)
-        .to.have.property("actions")
+      expect(this.result)
+        .to.eventually.have.property("actions")
         .that.is.deep.equal([
           {
             action: "append-beverage",
@@ -55,51 +45,70 @@ describe("Customer displays order", () => {
   });
 
   context("Given that the order contains beverages", () => {
-    let result;
-
     beforeEach(async () => {
-      this.espresso = {
-        id: "espresso id",
-        name: "Espresso",
-        price: 1.5,
-      };
-      this.mochaccino = {
-        id: "mochaccino id",
-        name: "Mochaccino",
-        price: 2.3,
-      };
       this.order = this.orderStorage.alreadyContains(
         order.withItems([
           { beverage: "espresso", quantity: 1 },
           { beverage: "mochaccino", quantity: 2 },
         ])
       );
-      result = await this.orderSystem.display(this.order.id);
-      return result;
+      this.result = this.orderSystem.display(this.order.id);
     });
 
     it("will show one item per beverage", () =>
-      expect(result)
-        .to.have.property("items")
+      expect(this.result)
+        .to.eventually.have.property("items")
         .that.is.deep.equal(this.order.data));
 
     it("will show the sum of the unit prices as total price", () =>
-      expect(result)
-        .to.have.property("totalPrice")
+      expect(this.result)
+        .to.eventually.have.property("totalPrice")
         .that.is.equal(6.1));
 
-    it("will be possible to place the order", async () => {
-      await result;
-      console.log(result.actions);
+    it("will be possible to place the order", async () =>
+      expect(this.result)
+        .to.eventually.have.property("actions")
+        .that.deep.include({ action: "place-order", target: this.order.id }));
 
-      return expect(result)
-        .to.have.property("actions")
-        .that.include({ action: "place-order", target: this.order.id });
-    });
+    it("will be possible to add a beverage", () =>
+      expect(this.result)
+        .to.eventually.have.property("actions")
+        .that.deep.include({
+          action: "append-beverage",
+          target: this.order.id,
+          parameters: {
+            beverageRef: null,
+            quantity: 0,
+          },
+        }));
 
-    it("will be possible to add a beverage");
-    it("will be possible to remove a beverage");
-    it("will be possible to change the quantity of a beverage");
+    it("will be possible to remove a beverage", () =>
+      expect(this.result)
+        .to.eventually.have.property("actions")
+        .that.deep.include({
+          action: "remove-beverage",
+          target: this.order.id,
+          parameters: { beverageRef: beverage.espresso().id },
+        })
+        .and.that.deep.include({
+          action: "remove-beverage",
+          target: this.order.id,
+          parameters: { beverageRef: beverage.mochaccino().id },
+        }));
+
+    it("will be possible to change the quantity of a beverage", () =>
+      expect(this.result)
+        .to.eventually.have.property("actions")
+        .that.deep.include({
+          action: "edit-beverage",
+          target: this.order.id,
+          parameters: { beverageRef: beverage.espresso().id },
+        })
+        .and.that.deep.include({
+          action: "edit-beverage",
+          target: this.order.id,
+          parameters: { beverageRef: beverage.mochaccino().id },
+        }));
   });
 
   context("Given that the order has pending messages", () => {
