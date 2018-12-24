@@ -1,5 +1,6 @@
 const chai = require("chai");
-const beverage = require("./support/examples/beverages");
+const { inspect } = require("util");
+// const beverage = require("./support/examples/beverages");
 const order = require("./support/examples/orders");
 const newStorage = require("./support/storageDouble");
 const orderSystemWith = require("../lib/orders");
@@ -52,6 +53,7 @@ describe("Customer displays order", () => {
           { beverage: "mochaccino", quantity: 2 },
         ])
       );
+      this.orderActions = order.actionsFor(this.order);
       this.result = this.orderSystem.display(this.order.id);
     });
 
@@ -68,47 +70,24 @@ describe("Customer displays order", () => {
     it("will be possible to place the order", async () =>
       expect(this.result)
         .to.eventually.have.property("actions")
-        .that.deep.include({ action: "place-order", target: this.order.id }));
+        .that.deep.include(this.orderActions.place()));
 
     it("will be possible to add a beverage", () =>
       expect(this.result)
         .to.eventually.have.property("actions")
-        .that.deep.include({
-          action: "append-beverage",
-          target: this.order.id,
-          parameters: {
-            beverageRef: null,
-            quantity: 0,
-          },
-        }));
+        .that.deep.include(this.orderActions.appendItem()));
 
     it("will be possible to remove a beverage", () =>
       expect(this.result)
         .to.eventually.have.property("actions")
-        .that.deep.include({
-          action: "remove-beverage",
-          target: this.order.id,
-          parameters: { beverageRef: beverage.espresso().id },
-        })
-        .and.that.deep.include({
-          action: "remove-beverage",
-          target: this.order.id,
-          parameters: { beverageRef: beverage.mochaccino().id },
-        }));
+        .that.deep.include(this.orderActions.removeItem(0))
+        .and.that.deep.include(this.orderActions.removeItem(1)));
 
     it("will be possible to change the quantity of a beverage", () =>
       expect(this.result)
         .to.eventually.have.property("actions")
-        .that.deep.include({
-          action: "edit-beverage",
-          target: this.order.id,
-          parameters: { beverageRef: beverage.espresso().id },
-        })
-        .and.that.deep.include({
-          action: "edit-beverage",
-          target: this.order.id,
-          parameters: { beverageRef: beverage.mochaccino().id },
-        }));
+        .that.deep.include(this.orderActions.editItemQuantity(0))
+        .and.that.deep.include(this.orderActions.editItemQuantity(1)));
   });
 
   context("Given that the order has pending messages", () => {

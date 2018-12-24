@@ -21,4 +21,37 @@ module.exports = {
       data: itemExamples.map(asOrderItem),
     };
   },
+  actionsFor: order => ({
+    removeItem: index => {
+      const item = order.data[index];
+      return {
+        action: "remove-beverage",
+        target: order.id,
+        parameters: { beverageRef: item.beverage.id },
+      };
+    },
+    editItemQuantity: index => {
+      const item = order.data[index];
+      return {
+        action: "edit-beverage",
+        target: order.id,
+        parameters: {
+          beverageRef: item.beverage.id,
+          newQuantity: item.quantity,
+        },
+      };
+    },
+    appendItem: () => ({
+      action: "append-beverage",
+      target: order.id,
+      parameters: {
+        beverageRef: null,
+        quantity: 0,
+      },
+    }),
+    place: () => ({
+      action: "place-order",
+      target: order.id,
+    }),
+  }),
 };
