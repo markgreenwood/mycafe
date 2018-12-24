@@ -91,6 +91,15 @@ describe("Customer displays order", () => {
       items: [{ beverage: "espresso", quantity: 1 }, { beverage: "mochaccino", quantity: 2 }],
       expectedTotalPrice: 6.1,
     },
+    {
+      title: "1 Mochaccino, 2 Espressos, and 1 Capuccino",
+      items: [
+        { beverage: "mochaccino", quantity: 1 },
+        { beverage: "espresso", quantity: 2 },
+        { beverage: "capuccino", quantity: 1 },
+      ],
+      expectedTotalPrice: 7.3,
+    },
   ].forEach(scenarioOrderContainsBeverages);
 
   context("Given that the order has pending messages", () => {

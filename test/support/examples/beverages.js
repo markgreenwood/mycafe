@@ -9,4 +9,9 @@ module.exports = {
     name: "Mochaccino",
     price: 2.3,
   }),
+  capuccino: () => ({
+    id: "capuccino id",
+    name: "Capuccino",
+    price: 2,
+  }),
 };
