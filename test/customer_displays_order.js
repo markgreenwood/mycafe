@@ -71,17 +71,17 @@ describe("Customer displays order", () => {
           .to.eventually.have.property("actions")
           .that.deep.include(this.orderActions.appendItem()));
 
-      it("will be possible to remove a beverage", () =>
-        expect(this.result)
-          .to.eventually.have.property("actions")
-          .that.deep.include(this.orderActions.removeItem(0))
-          .and.that.deep.include(this.orderActions.removeItem(1)));
+      testExample.items.forEach((itemExample, i) => {
+        it(`will be possible to remove the ${itemExample.beverage}`, () =>
+          expect(this.result)
+            .to.eventually.have.property("actions")
+            .that.deep.include(this.orderActions.removeItem(i)));
 
-      it("will be possible to change the quantity of a beverage", () =>
-        expect(this.result)
-          .to.eventually.have.property("actions")
-          .that.deep.include(this.orderActions.editItemQuantity(0))
-          .and.that.deep.include(this.orderActions.editItemQuantity(1)));
+        it(`will be possible to change the quantity of ${itemExample.beverage}`, () =>
+          expect(this.result)
+            .to.eventually.have.property("actions")
+            .that.deep.include(this.orderActions.editItemQuantity(i)));
+      });
     });
   };
 
